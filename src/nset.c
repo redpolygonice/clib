@@ -44,6 +44,7 @@ static struct nset_node* nset_insert_node(nset* set, long key)
 			}
 
 			list_push(nodes, node);
+			list_push(set->iterator, node);
 			set->node_count++;
 			return node;
 		}
@@ -248,6 +249,11 @@ size_t nset_size(nset* set)
 	return set->node_count;
 }
 
+BOOL nset_empty(nset* set)
+{
+	return set->node_count == 0;
+}
+
 BOOL nset_first(nset* set)
 {
 	return list_first(set->iterator);
@@ -300,5 +306,68 @@ void nset_for_each(nset* set, nset_get_value get_value)
 					get_value(node->key);
 			}
 		}
+	}
+}
+
+void nset_append(nset* set, nset* src)
+{
+	nset_first(src);
+	do
+	{
+		long key = nset_get(src);
+		if (key != KEY_NULL)
+			nset_insert(set, key);
+	}
+	while (nset_next(src));
+}
+
+void nset_append_list(nset* set, nlist* src)
+{
+	for (nlist_first(src); !nlist_end(src); nlist_next(src))
+	{
+		long key = nlist_get(src);
+		if (key != KEY_NULL)
+			nset_insert(set, key);
+	}
+}
+
+void nset_remove_list(nset* set, nlist* src)
+{
+	for (nlist_first(src); !nlist_end(src); nlist_next(src))
+	{
+		long key = nlist_get(src);
+		if (key != KEY_NULL)
+			nset_remove(set, key);
+	}
+}
+
+void nset_print(nset*set)
+{
+	for (list_first(set->iterator); !list_end(set->iterator); list_next(set->iterator))
+	{
+		struct nset_node* node = (struct nset_node*)list_get(set->iterator);
+		if (node->removed || node->key == KEY_NULL)
+			continue;
+
+		printf("%ld\n", node->key);
+	}
+}
+
+void nset_print_ip(nset* set)
+{
+	for (list_first(set->iterator); !list_end(set->iterator); list_next(set->iterator))
+	{
+		struct nset_node* node = (struct nset_node*)list_get(set->iterator);
+		if (node->removed || node->key == KEY_NULL)
+			continue;
+
+		unsigned int ip = (unsigned int)node->key;
+		char s_ip[16] = {0};
+		sprintf(s_ip, "%u.%u.%u.%u"
+			, (ip) & 0xff
+			, (ip >> 8) & 0xff
+			, (ip >> 16) & 0xff
+			, (ip >> 24) & 0xff);
+		printf("%s\n", s_ip);
 	}
 }

@@ -16,6 +16,7 @@ void smap_print_value(char* key, void* value)
 
 void test_smap(void)
 {
+	printf("--> Test smap\n");
 	smap* map = smap_new();
 	smap_reserve(map, 10);
 	const int count = 10;
@@ -45,8 +46,8 @@ void test_smap(void)
 	}
 
 	// Print content
-	//printf("Content:\n");
-	//smap_for_each(map, smap_print_value);
+	printf("Content:\n");
+	smap_for_each(map, smap_print_value);
 
 	// Remove
 	printf("Remove key1\n");
@@ -59,7 +60,7 @@ void test_smap(void)
 	smap_remove(map, "key10", TRUE);
 
 	// Print content
-	printf("Content:\n");
+	printf("Content after removal:\n");
 	smap_first(map);
 	do
 	{
@@ -93,6 +94,7 @@ void nmap_print_value(long key, void* value)
 
 void test_nmap(void)
 {
+	printf("--> Test nmap\n");
 	nmap* map = nmap_new();
 	nmap_reserve(map, 10);
 	const int count = 10;
@@ -118,8 +120,8 @@ void test_nmap(void)
 	}
 
 	// Print content
-	//printf("Content:\n");
-	//nmap_for_each(map, nmap_print_value);
+	printf("Content:\n");
+	nmap_for_each(map, nmap_print_value);
 
 	// Remove
 	printf("Remove key 1\n");
@@ -132,7 +134,7 @@ void test_nmap(void)
 	nmap_remove(map, 10, TRUE);
 
 	// Print content
-	printf("Content:\n");
+	printf("Content after removal:\n");
 	nmap_first(map);
 	do
 	{
@@ -152,13 +154,13 @@ void test_nmap(void)
 	printf("Clear map\n");
 	nmap_clear(map, TRUE);
 	printf("Map size %lu\n", nmap_size(map));
-
 	printf("Delete map\n");
 	nmap_delete(map, TRUE);
 }
 
 void test_slist(void)
 {
+	printf("--> Test slist\n");
 	slist* list = slist_new();
 	const int count = 10;
 	const int str_size = 100;
@@ -246,6 +248,7 @@ void test_slist(void)
 
 void test_nlist(void)
 {
+	printf("--> Test nlist\n");
 	nlist* list = nlist_new();
 	const int count = 10;
 	const int str_size = 100;
@@ -313,6 +316,7 @@ void sset_print_value(char* value)
 
 void test_sset(void)
 {
+	printf("--> Test sset\n");
 	sset* set = sset_new();
 	sset_reserve(set, 10);
 	const int count = 10;
@@ -337,9 +341,6 @@ void test_sset(void)
 		printf("Insert copy %s\n", value);
 	}
 
-	// Print content
-	//sset_for_each(set, sset_print_value);
-
 	// Remove
 	printf("Remove value1\n");
 	sset_remove(set, "value1", TRUE);
@@ -351,6 +352,7 @@ void test_sset(void)
 	sset_remove(set, "value10", TRUE);
 
 	// Print content
+	printf("Content:\n");
 	sset_first(set);
 	do
 	{
@@ -358,6 +360,17 @@ void test_sset(void)
 		printf("Data %s\n", value);
 	}
 	while (sset_next(set));
+
+	// Append list
+	slist* alist = slist_new();
+	slist_push_copy(alist, "list_value1");
+	slist_push_copy(alist, "list_value2");
+	slist_push_copy(alist, "list_value3");
+	sset_append_list(set, alist);
+
+	// Print content
+	printf("Content after appending list:\n");
+	sset_for_each(set, sset_print_value);
 
 	// Find
 	char value[key_size];
@@ -384,6 +397,7 @@ void nset_print_value(long value)
 
 void test_nset(void)
 {
+	printf("--> Test nset\n");
 	nset* set = nset_new();
 	nset_reserve(set, 10);
 	const int count = 10;
@@ -396,9 +410,6 @@ void test_nset(void)
 		printf("Insert value %d\n", i);
 	}
 
-	// Print content
-	//nset_for_each(set, nset_print_value);
-
 	// Remove
 	printf("Remove value 1\n");
 	nset_remove(set, 1);
@@ -410,6 +421,7 @@ void test_nset(void)
 	nset_remove(set, 10);
 
 	// Print content
+	printf("Content:\n");
 	nset_first(set);
 	do
 	{
@@ -418,6 +430,16 @@ void test_nset(void)
 	}
 	while (nset_next(set));
 
+	// Append list
+	nlist* alist = nlist_new();
+	nlist_push(alist, 1001);
+	nlist_push(alist, 1002);
+	nlist_push(alist, 1003);
+	nset_append_list(set, alist);
+
+	// Print content
+	printf("Content after appending list:\n");
+	nset_for_each(set, nset_print_value);
 
 	// Find
 	for (int i = 1; i <= count; ++i)

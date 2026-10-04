@@ -280,9 +280,36 @@ BOOL sset_find(sset* set, const char* key)
 	return FALSE;
 }
 
+void sset_append(sset* set, sset* src)
+{
+	sset_first(src);
+	do
+	{
+		char* key = sset_get(src);
+		if (key != NULL)
+			sset_insert(set, key);
+	}
+	while (sset_next(src));
+}
+
+void sset_append_list(sset* set, slist* src)
+{
+	for (slist_first(src); !slist_end(src); slist_next(src))
+	{
+		char* key = slist_get(src);
+		if (key != NULL)
+			sset_insert(set, key);
+	}
+}
+
 size_t sset_size(sset* set)
 {
 	return set->node_count;
+}
+
+BOOL sset_empty(sset*set)
+{
+	return set->node_count == 0;
 }
 
 BOOL sset_first(sset* set)
@@ -340,4 +367,14 @@ void sset_for_each(sset* set, sset_get_value get_value)
 	}
 }
 
+void sset_print(sset*set)
+{
+	for (list_first(set->iterator); !list_end(set->iterator); list_next(set->iterator))
+	{
+		struct sset_node* node = (struct sset_node*)list_get(set->iterator);
+		if (node->removed || node->key == NULL)
+			continue;
 
+		printf("%s\n", node->key);
+	}
+}

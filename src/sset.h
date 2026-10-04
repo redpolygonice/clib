@@ -2,6 +2,7 @@
 #define SSET_H
 
 #include "list.h"
+#include "slist.h"
 
 #include <stdio.h>
 
@@ -34,12 +35,16 @@ void sset_insert(sset* set, char* key);
 void sset_insert_copy(sset* set, const char* key);
 void sset_remove(sset* set, const char* key, BOOL delete);
 BOOL sset_find(sset* set, const char* key);
+void sset_append(sset* set, sset* src);
+void sset_append_list(sset* set, slist* src);
 size_t sset_size(sset* set);
+BOOL sset_empty(sset* set);
 BOOL sset_first(sset* set);
 BOOL sset_last(sset* set);
 BOOL sset_next(sset* set);
 BOOL sset_prev(sset* set);
 char* sset_get(sset* set);
 void sset_for_each(sset* set, sset_get_value get_value);
+void sset_print(sset* set);
 
 #endif // SSET_H

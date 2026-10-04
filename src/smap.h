@@ -42,11 +42,13 @@ void smap_insert_copy(smap* map, const char* key, const void* value, size_t size
 void smap_remove(smap* map, const char* key, BOOL delete);
 void* smap_find(smap* map, const char* key);
 size_t smap_size(smap* map);
+BOOL smap_empty(smap* map);
 BOOL smap_first(smap* map);
 BOOL smap_last(smap* map);
 BOOL smap_next(smap* map);
 BOOL smap_prev(smap* map);
 smap_kv smap_get(smap* map);
 void smap_for_each(smap* map, smap_get_value get_value);
+void smap_print(smap* map);
 
 #endif // SMAP_H

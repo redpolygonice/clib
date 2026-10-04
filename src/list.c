@@ -211,6 +211,7 @@ void list_delete(list* list, BOOL delete)
 {
 	list_clear(list, delete);
 	free(list);
+	list = NULL;
 }
 
 void list_append(list* dest, list* src)

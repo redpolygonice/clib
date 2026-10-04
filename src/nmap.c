@@ -303,6 +303,11 @@ size_t nmap_size(nmap* map)
 	return map->node_count;
 }
 
+BOOL nmap_empty(nmap*map)
+{
+	return map->node_count == 0;
+}
+
 BOOL nmap_first(nmap* map)
 {
 	return list_first(map->iterator);
@@ -358,5 +363,17 @@ void nmap_for_each(nmap*map, nmap_get_value get_value)
 					get_value(node->key, node->value);
 			}
 		}
+	}
+}
+
+void nmap_print(nmap* map)
+{
+	for (list_first(map->iterator); !list_end(map->iterator); list_next(map->iterator))
+	{
+		struct nmap_node* node = (struct nmap_node*)list_get(map->iterator);
+		if (node->key == KEY_NULL)
+			continue;
+
+		printf("%ld %s\n", node->key, (char*)node->value);
 	}
 }

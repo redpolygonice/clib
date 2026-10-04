@@ -42,11 +42,13 @@ void nmap_insert_copy(nmap* map, long key, void* value, size_t size);
 void nmap_remove(nmap* map, long key, BOOL delete);
 void* nmap_find(nmap* map, long key);
 size_t nmap_size(nmap* map);
+BOOL nmap_empty(nmap* map);
 BOOL nmap_first(nmap* map);
 BOOL nmap_last(nmap* map);
 BOOL nmap_next(nmap* map);
 BOOL nmap_prev(nmap* map);
 nmap_kv nmap_get(nmap* map);
 void nmap_for_each(nmap* map, nmap_get_value get_value);
+void nmap_print(nmap* map);
 
 #endif // NMAP_H
