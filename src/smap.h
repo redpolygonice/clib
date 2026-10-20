@@ -1,36 +1,22 @@
 #ifndef SMAP_H
 #define SMAP_H
 
-#include "list.h"
+#include "types.h"
 
 #include <stdio.h>
 
 typedef void (*smap_get_value)(char*, void*);
 
-#define INCR_SIZE 16
+#define SMAP_INCR_SIZE 16
 
-struct smap_node
-{
-	char* key;
-	void* value;
-	list* nodes;
-	BOOL removed;
-};
+typedef struct smap_node smap_node;
+typedef struct smap smap;
 
 typedef struct smap_kv
 {
 	char* key;
 	void* value;
 } smap_kv;
-
-typedef struct smap
-{
-	size_t size;
-	size_t count;
-	size_t node_count;
-	struct smap_node* nodes;
-	list* iterator;
-} smap;
 
 smap* smap_new(void);
 void smap_reserve(smap* map, size_t size);

@@ -1,8 +1,26 @@
 #include "smap.h"
+#include "list.h"
 
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
+
+struct smap_node
+{
+	char* key;
+	void* value;
+	list* nodes;
+	BOOL removed;
+};
+
+struct smap
+{
+	size_t size;
+	size_t count;
+	size_t node_count;
+	smap_node* nodes;
+	list* iterator;
+};
 
 static size_t smap_hash(const char* key)
 {
@@ -39,7 +57,7 @@ static struct smap_node* smap_insert_node(smap* map, char* key, void* value)
 		// Collision
 		else
 		{
-			struct smap_node* node = (struct smap_node*)malloc(sizeof(struct smap_node));
+			smap_node* node = (smap_node*)malloc(sizeof(smap_node));
 			node->key = key;
 			node->value = value;
 			node->nodes = NULL;
@@ -71,7 +89,7 @@ static struct smap_node* smap_find_list(list* nodes, const char* key)
 {
 	for (list_first(nodes); !list_end(nodes); list_next(nodes))
 	{
-		struct smap_node* node = (struct smap_node*)list_get(nodes);
+		smap_node* node = (smap_node*)list_get(nodes);
 		if (node == NULL || node->key == NULL)
 			return NULL;
 
@@ -84,20 +102,20 @@ static struct smap_node* smap_find_list(list* nodes, const char* key)
 
 static void smap_rehash(smap* map, size_t size)
 {
-	struct smap_node* old_nodes = map->nodes;
+	smap_node* old_nodes = map->nodes;
 
 	if (size == 0)
-		map->size += INCR_SIZE;
+		map->size += SMAP_INCR_SIZE;
 	else
 		map->size = size;
 
-	map->nodes = calloc(map->size, sizeof(struct smap_node));
+	map->nodes = calloc(map->size, sizeof(smap_node));
 	map->node_count = 0;
 
 	// Clear iterator list
 	for (list_first(map->iterator); !list_end(map->iterator); list_next(map->iterator))
 	{
-		struct smap_node* node = (struct smap_node*)list_get(map->iterator);
+		smap_node* node = (smap_node*)list_get(map->iterator);
 		if (node->removed)
 			list_remove(map->iterator, TRUE);
 	}
@@ -111,7 +129,7 @@ static void smap_rehash(smap* map, size_t size)
 		{
 			for (list_first(nodes); !list_end(nodes); list_next(nodes))
 			{
-				struct smap_node* node = (struct smap_node*)list_get(nodes);
+				smap_node* node = (smap_node*)list_get(nodes);
 				if (node->key == NULL)
 					continue;
 
@@ -147,7 +165,7 @@ void smap_init(smap* map)
 {
 	map->count = 0;
 	map->node_count = 0;
-	map->size = INCR_SIZE;
+	map->size = SMAP_INCR_SIZE;
 
 	if (map->iterator == NULL)
 		map->iterator = list_new();
@@ -157,7 +175,7 @@ void smap_init(smap* map)
 	if (map->nodes != NULL)
 		free(map->nodes);
 
-	map->nodes = calloc(map->size, sizeof(struct smap_node));
+	map->nodes = calloc(map->size, sizeof(smap_node));
 }
 
 void smap_clear(smap* map, BOOL delete)
@@ -173,7 +191,7 @@ void smap_clear(smap* map, BOOL delete)
 				{
 					for (list_first(nodes); !list_end(nodes); list_next(nodes))
 					{
-						struct smap_node* node = (struct smap_node*)list_get(nodes);
+						smap_node* node = (smap_node*)list_get(nodes);
 						if (node->key != NULL)
 						{
 							free(node->key);
@@ -249,7 +267,7 @@ void smap_remove(smap* map, const char*key, BOOL delete)
 	list* nodes = map->nodes[index].nodes;
 	if (nodes != NULL)
 	{
-		struct smap_node* node = smap_find_list(nodes, key);
+		smap_node* node = smap_find_list(nodes, key);
 		if (node != NULL)
 		{
 			if (delete && node->key != NULL)
@@ -303,7 +321,7 @@ void* smap_find(smap* map, const char* key)
 			return map->nodes[index].value;
 
 		// Find node in list
-		struct smap_node* node = smap_find_list(nodes, key);
+		smap_node* node = smap_find_list(nodes, key);
 		if (node != NULL)
 			return node->value;
 	}
@@ -344,7 +362,7 @@ BOOL smap_prev(smap* map)
 smap_kv smap_get(smap* map)
 {
 	smap_kv kv = {0};
-	struct smap_node* node = list_get(map->iterator);
+	smap_node* node = list_get(map->iterator);
 	if (node == NULL)
 		return kv;
 
@@ -371,7 +389,7 @@ void smap_for_each(smap* map, smap_get_value get_value)
 		{
 			for (list_first(nodes); !list_end(nodes); list_next(nodes))
 			{
-				struct smap_node* node = (struct smap_node*)list_get(nodes);
+				smap_node* node = (smap_node*)list_get(nodes);
 				if (node != NULL && node->key != NULL)
 					get_value(node->key, node->value);
 			}
@@ -383,7 +401,7 @@ void smap_print(smap* map)
 {
 	for (list_first(map->iterator); !list_end(map->iterator); list_next(map->iterator))
 	{
-		struct smap_node* node = (struct smap_node*)list_get(map->iterator);
+		smap_node* node = (smap_node*)list_get(map->iterator);
 		if (node->key == NULL)
 			continue;
 

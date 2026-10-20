@@ -3,19 +3,10 @@
 
 #include "types.h"
 
-typedef struct nlist_node
-{
-	unsigned int data;
-	struct nlist_node* next;
-	struct nlist_node* prev;
-} nlist_node;
+#include <stdlib.h>
 
-typedef struct nlist
-{
-	nlist_node* first;
-	nlist_node* last;
-	nlist_node* curr;
-} nlist;
+typedef struct nlist_node nlist_node;
+typedef struct nlist nlist;
 
 nlist* nlist_new(void);
 void nlist_init(nlist* list);
@@ -28,7 +19,7 @@ BOOL nlist_prev(nlist* list);
 BOOL nlist_end(nlist* list);
 unsigned int nlist_get(nlist* list);
 void nlist_remove(nlist* list);
-int nlist_count(nlist* list);
+size_t nlist_ize(nlist* list);
 BOOL nlist_empty(nlist* list);
 void nlist_clear(nlist* list);
 void nlist_delete(nlist* list);

@@ -1,36 +1,22 @@
 #ifndef NMAP_H
 #define NMAP_H
 
-#include "list.h"
+#include "types.h"
 
 #include <stdio.h>
 
 typedef void (*nmap_get_value)(long, void*);
 
-#define INCR_SIZE 16
+#define NMAP_INCR_SIZE 16
 
-struct nmap_node
-{
-	long key;
-	void* value;
-	list* nodes;
-	BOOL removed;
-};
+typedef struct nmap_node nmap_node;
+typedef struct nmap nmap;
 
 typedef struct nmap_kv
 {
 	long key;
 	void* value;
 } nmap_kv;
-
-typedef struct nmap
-{
-	size_t size;
-	size_t count;
-	size_t node_count;
-	struct nmap_node* nodes;
-	list* iterator;
-} nmap;
 
 nmap* nmap_new(void);
 void nmap_reserve(nmap* map, size_t size);

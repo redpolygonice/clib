@@ -8,23 +8,10 @@
 
 typedef void (*nset_get_value)(long);
 
-#define INCR_SIZE 16
+#define NSET_INCR_SIZE 16
 
-struct nset_node
-{
-	long key;
-	list* nodes;
-	BOOL removed;
-};
-
-typedef struct nset
-{
-	size_t size;
-	size_t count;
-	size_t node_count;
-	struct nset_node* nodes;
-	list* iterator;
-} nset;
+typedef struct nset_node nset_node;
+typedef struct nset nset;
 
 nset* nset_new(void);
 void nset_reserve(nset* set, size_t size);

@@ -1,30 +1,16 @@
 #ifndef SSET_H
 #define SSET_H
 
-#include "list.h"
 #include "slist.h"
 
 #include <stdio.h>
 
-#define INCR_SIZE 16
+#define SSET_INCR_SIZE 16
 
 typedef void (*sset_get_value)(char*);
 
-struct sset_node
-{
-	char* key;
-	list* nodes;
-	BOOL removed;
-};
-
-typedef struct sset
-{
-	size_t size;
-	size_t count;
-	size_t node_count;
-	struct sset_node* nodes;
-	list* iterator;
-} sset;
+typedef struct sset_node sset_node;
+typedef struct sset sset;
 
 sset* sset_new(void);
 void sset_reserve(sset* set, size_t size);

@@ -4,6 +4,22 @@
 #include <stdlib.h>
 #include <string.h>
 
+struct nset_node
+{
+	long key;
+	list* nodes;
+	BOOL removed;
+};
+
+struct nset
+{
+	size_t size;
+	size_t count;
+	size_t node_count;
+	nset_node* nodes;
+	list* iterator;
+};
+
 static size_t nset_hash(long key)
 {
 	return key;
@@ -31,7 +47,7 @@ static struct nset_node* nset_insert_node(nset* set, long key)
 		// Collision
 		else
 		{
-			struct nset_node* node = (struct nset_node*)malloc(sizeof(struct nset_node));
+			nset_node* node = (nset_node*)malloc(sizeof(nset_node));
 			node->key = key;
 			node->nodes = NULL;
 			node->removed = FALSE;
@@ -61,7 +77,7 @@ static struct nset_node* nset_find_list(list* nodes, long key)
 {
 	for (list_first(nodes); !list_end(nodes); list_next(nodes))
 	{
-		struct nset_node* node = (struct nset_node*)list_get(nodes);
+		nset_node* node = (nset_node*)list_get(nodes);
 		if (node == NULL || node->key == KEY_NULL)
 			return NULL;
 
@@ -74,20 +90,20 @@ static struct nset_node* nset_find_list(list* nodes, long key)
 
 static void nset_rehash(nset* set, size_t size)
 {
-	struct nset_node* old_nodes = set->nodes;
+	nset_node* old_nodes = set->nodes;
 
 	if (size == 0)
-		set->size += INCR_SIZE;
+		set->size += NSET_INCR_SIZE;
 	else
 		set->size = size;
 
-	set->nodes = calloc(set->size, sizeof(struct nset_node));
+	set->nodes = calloc(set->size, sizeof(nset_node));
 	set->node_count = 0;
 
 	// Clear iterator list
 	for (list_first(set->iterator); !list_end(set->iterator); list_next(set->iterator))
 	{
-		struct nset_node* node = (struct nset_node*)list_get(set->iterator);
+		nset_node* node = (nset_node*)list_get(set->iterator);
 		if (node->removed)
 			list_remove(set->iterator, TRUE);
 	}
@@ -103,7 +119,7 @@ static void nset_rehash(nset* set, size_t size)
 		{
 			for (list_first(nodes); !list_end(nodes); list_next(nodes))
 			{
-				struct nset_node* node = (struct nset_node*)list_get(nodes);
+				nset_node* node = (nset_node*)list_get(nodes);
 				if (node->key == KEY_NULL)
 					continue;
 
@@ -139,7 +155,7 @@ void nset_init(nset* set)
 {
 	set->count = 0;
 	set->node_count = 0;
-	set->size = INCR_SIZE;
+	set->size = NSET_INCR_SIZE;
 
 	if (set->iterator == NULL)
 		set->iterator = list_new();
@@ -149,7 +165,7 @@ void nset_init(nset* set)
 	if (set->nodes != NULL)
 		free(set->nodes);
 
-	set->nodes = calloc(set->size, sizeof(struct nset_node));
+	set->nodes = calloc(set->size, sizeof(nset_node));
 
 	for (size_t i = 0; i < set->size; ++i)
 		set->nodes[i].key = KEY_NULL;
@@ -205,7 +221,7 @@ void nset_remove(nset* set, long key)
 	list* nodes = set->nodes[index].nodes;
 	if (nodes != NULL)
 	{
-		struct nset_node* node = nset_find_list(nodes, key);
+		nset_node* node = nset_find_list(nodes, key);
 		if (node != NULL)
 		{
 			// Don't free the nset_node, this will be removed in iterator list
@@ -236,7 +252,7 @@ BOOL nset_find(nset* set, long key)
 	list* nodes = set->nodes[index].nodes;
 	if (nodes != NULL)
 	{
-		struct nset_node* node = nset_find_list(nodes, key);
+		nset_node* node = nset_find_list(nodes, key);
 		if (node != NULL)
 			return TRUE;
 	}
@@ -301,7 +317,7 @@ void nset_for_each(nset* set, nset_get_value get_value)
 		{
 			for (list_first(nodes); !list_end(nodes); list_next(nodes))
 			{
-				struct nset_node* node = (struct nset_node*)list_get(nodes);
+				nset_node* node = (nset_node*)list_get(nodes);
 				if (node != NULL && node->key != KEY_NULL)
 					get_value(node->key);
 			}
@@ -311,6 +327,10 @@ void nset_for_each(nset* set, nset_get_value get_value)
 
 void nset_append(nset* set, nset* src)
 {
+	size_t new_size = set->node_count + src->node_count;
+	if (new_size > set->size)
+		nset_reserve(set, new_size);
+
 	nset_first(src);
 	do
 	{
@@ -323,6 +343,10 @@ void nset_append(nset* set, nset* src)
 
 void nset_append_list(nset* set, nlist* src)
 {
+	size_t new_size = set->node_count + nlist_ize(src);
+	if (new_size > set->size)
+		nset_reserve(set, new_size);
+
 	for (nlist_first(src); !nlist_end(src); nlist_next(src))
 	{
 		long key = nlist_get(src);
@@ -345,7 +369,7 @@ void nset_print(nset*set)
 {
 	for (list_first(set->iterator); !list_end(set->iterator); list_next(set->iterator))
 	{
-		struct nset_node* node = (struct nset_node*)list_get(set->iterator);
+		nset_node* node = (nset_node*)list_get(set->iterator);
 		if (node->removed || node->key == KEY_NULL)
 			continue;
 
@@ -357,7 +381,7 @@ void nset_print_ip(nset* set)
 {
 	for (list_first(set->iterator); !list_end(set->iterator); list_next(set->iterator))
 	{
-		struct nset_node* node = (struct nset_node*)list_get(set->iterator);
+		nset_node* node = (nset_node*)list_get(set->iterator);
 		if (node->removed || node->key == KEY_NULL)
 			continue;
 

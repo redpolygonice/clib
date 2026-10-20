@@ -2,20 +2,10 @@
 #define SLIST_H
 
 #include "types.h"
+#include <stddef.h>
 
-typedef struct slist_node
-{
-	char* data;
-	struct slist_node* next;
-	struct slist_node* prev;
-} slist_node;
-
-typedef struct slist
-{
-	slist_node* first;
-	slist_node* last;
-	slist_node* curr;
-} slist;
+typedef struct slist_node slist_node;
+typedef struct slist slist;
 
 slist* slist_new(void);
 void slist_init(slist* list);
@@ -30,7 +20,7 @@ BOOL slist_prev(slist* list);
 BOOL slist_end(slist* list);
 char* slist_get(slist* list);
 void slist_remove(slist* list, BOOL delete);
-int slist_count(slist* list);
+size_t slist_size(slist* list);
 BOOL slist_empty(slist* list);
 void slist_clear(slist* list, BOOL delete);
 void slist_delete(slist* list, BOOL delete);

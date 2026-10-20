@@ -4,6 +4,7 @@
 #include "nlist.h"
 #include "sset.h"
 #include "nset.h"
+#include "vector.h"
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -222,7 +223,7 @@ void test_slist(void)
 	printf("Remove string5\n");
 	if (slist_find(list, "string5"))
 		slist_remove(list, TRUE);
-	printf("Count %d\n", slist_count(list));
+	printf("Count %d\n", slist_size(list));
 
 	// Reverse content
 	printf("Reverse Content:\n");
@@ -239,7 +240,7 @@ void test_slist(void)
 	// Clear list
 	printf("Clear list\n");
 	slist_clear(list, TRUE);
-	printf("Count %d\n", slist_count(list));
+	printf("Count %d\n", slist_size(list));
 
 	// Delete list
 	printf("Delete list\n");
@@ -285,7 +286,7 @@ void test_nlist(void)
 	printf("Remove 5\n");
 	if (nlist_find(list, 5))
 		nlist_remove(list);
-	printf("Count %d\n", nlist_count(list));
+	printf("Count %d\n", nlist_ize(list));
 
 	// Reverse content
 	printf("Reverse Content:\n");
@@ -302,7 +303,7 @@ void test_nlist(void)
 	// Clear list
 	printf("Clear list\n");
 	nlist_clear(list);
-	printf("Count %d\n", nlist_count(list));
+	printf("Count %d\n", nlist_ize(list));
 
 	// Delete list
 	printf("Delete list\n");
@@ -457,6 +458,80 @@ void test_nset(void)
 	nset_delete(set);
 }
 
+void test_vector()
+{
+	printf("--> Test vector\n");
+	vector* the_vector = vector_new();
+	vector_reserve(the_vector, 10);
+	const int key_size = 10;
+	const int count = 10;
+
+	// Insert
+	for (int i = 0; i < count; ++i)
+	{
+		char* value = (char*)malloc(key_size);
+		sprintf(value, "string%d", i + 1);
+		vector_push(the_vector, value);
+		printf("Push %s\n", value);
+	}
+
+	printf("Content:\n");
+	vector_print(the_vector);
+
+	// Remove
+	vector_remove_at(the_vector, 0, TRUE);
+	vector_remove_at(the_vector, 5, TRUE);
+
+	printf("Content after removal:\n");
+	vector_print(the_vector);
+	printf("Size: %ld\n", vector_size(the_vector));
+
+	// Elements at position
+	char* value = vector_at(the_vector, 1);
+	printf("Data at 1: %s\n", value);
+	value = vector_at(the_vector, 7);
+	printf("Data at 7: %s\n", value);
+	value = vector_at(the_vector, 15);
+	printf("Data at 15: %s\n", value);
+
+	// Iterator
+	printf("Iterator:\n");
+	for (vector_first(the_vector); !vector_end(the_vector); vector_next(the_vector))
+	{
+		char* value = vector_get(the_vector);
+		printf("Value %s\n", value);
+	}
+
+	// Append other vector
+	vector* other_vector = vector_new();
+	for (int i = 0; i < count; ++i)
+	{
+		char* value = (char*)malloc(key_size);
+		sprintf(value, "string%d", i + 10);
+		vector_push(other_vector, value);
+	}
+
+	printf("Content after appending:\n");
+	vector_append(the_vector, other_vector);
+	vector_print(the_vector);
+	printf("Size: %ld\n", vector_size(the_vector));
+
+	// Find elements
+	printf("Find elements:\n");
+	for (int i = 0; i < count; ++i)
+	{
+		char value[key_size];
+		sprintf(value, "string%d", i + 1);
+		BOOL result = vector_find(the_vector, value, strlen(value) + 1);
+		printf("Found %s %d\n", value, result);
+	}
+
+	printf("Clear elements\n");
+	vector_clear(the_vector, TRUE);
+	printf("Size: %ld\n", vector_size(the_vector));
+	vector_delete(the_vector, TRUE);
+}
+
 int main()
 {
 	//test_smap();
@@ -465,5 +540,6 @@ int main()
 	//test_nlist();
 	//test_sset();
 	//test_nset();
+	//test_vector();
 	return 0;
 }

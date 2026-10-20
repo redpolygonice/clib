@@ -5,19 +5,8 @@
 
 #include <stdlib.h>
 
-typedef struct list_node
-{
-	void* data;
-	struct list_node* next;
-	struct list_node* prev;
-} list_node;
-
-typedef struct list
-{
-	list_node* first;
-	list_node* last;
-	list_node* curr;
-} list;
+typedef struct list_node list_node;
+typedef struct list list;
 
 list* list_new(void);
 void list_init(list* list);

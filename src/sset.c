@@ -1,8 +1,25 @@
 #include "sset.h"
+#include "list.h"
 
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
+
+struct sset_node
+{
+	char* key;
+	list* nodes;
+	BOOL removed;
+};
+
+struct sset
+{
+	size_t size;
+	size_t count;
+	size_t node_count;
+	sset_node* nodes;
+	list* iterator;
+};
 
 static size_t sset_hash(const char* key)
 {
@@ -84,7 +101,7 @@ static void sset_rehash(sset* set, size_t size)
 	struct sset_node* old_nodes = set->nodes;
 
 	if (size == 0)
-		set->size += INCR_SIZE;
+		set->size += SSET_INCR_SIZE;
 	else
 		set->size = size;
 
@@ -144,7 +161,7 @@ void sset_init(sset* set)
 {
 	set->count = 0;
 	set->node_count = 0;
-	set->size = INCR_SIZE;
+	set->size = SSET_INCR_SIZE;
 
 	if (set->iterator == NULL)
 		set->iterator = list_new();
@@ -282,6 +299,10 @@ BOOL sset_find(sset* set, const char* key)
 
 void sset_append(sset* set, sset* src)
 {
+	size_t new_size = set->node_count + src->node_count;
+	if (new_size > set->size)
+		sset_reserve(set, new_size);
+
 	sset_first(src);
 	do
 	{
@@ -294,6 +315,10 @@ void sset_append(sset* set, sset* src)
 
 void sset_append_list(sset* set, slist* src)
 {
+	size_t new_size = set->node_count + slist_size(src);
+	if (new_size > set->size)
+		sset_reserve(set, new_size);
+
 	for (slist_first(src); !slist_end(src); slist_next(src))
 	{
 		char* key = slist_get(src);

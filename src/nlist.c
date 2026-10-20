@@ -4,6 +4,20 @@
 #include <stdlib.h>
 #include <string.h>
 
+struct nlist_node
+{
+	unsigned int data;
+	struct nlist_node* next;
+	struct nlist_node* prev;
+};
+
+struct nlist
+{
+	nlist_node* first;
+	nlist_node* last;
+	nlist_node* curr;
+};
+
 nlist* nlist_new(void)
 {
 	nlist* list = (nlist*)malloc(sizeof(nlist));
@@ -160,13 +174,13 @@ void nlist_remove(nlist* list)
 	free(curr);
 }
 
-int nlist_count(nlist* list)
+size_t nlist_ize(nlist* list)
 {
 	nlist_node* node = list->first;
 	if (!node)
 		return 0;
 
-	int count = 0;
+	size_t count = 0;
 	while (node)
 	{
 		count++;

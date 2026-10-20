@@ -4,6 +4,20 @@
 #include <stdlib.h>
 #include <string.h>
 
+struct slist_node
+{
+	char* data;
+	struct slist_node* next;
+	struct slist_node* prev;
+};
+
+struct slist
+{
+	slist_node* first;
+	slist_node* last;
+	slist_node* curr;
+};
+
 slist* slist_new(void)
 {
 	slist* list = (slist*)malloc(sizeof(slist));
@@ -188,13 +202,13 @@ void slist_remove(slist* list, BOOL delete)
 	free(curr);
 }
 
-int slist_count(slist* list)
+size_t slist_size(slist* list)
 {
 	slist_node* node = list->first;
 	if (!node)
 		return 0;
 
-	int count = 0;
+	size_t count = 0;
 	while (node)
 	{
 		count++;

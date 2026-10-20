@@ -1,7 +1,25 @@
 #include "nmap.h"
+#include "list.h"
 
 #include <stdlib.h>
 #include <string.h>
+
+struct nmap_node
+{
+	long key;
+	void* value;
+	list* nodes;
+	BOOL removed;
+};
+
+struct nmap
+{
+	size_t size;
+	size_t count;
+	size_t node_count;
+	nmap_node* nodes;
+	list* iterator;
+};
 
 static size_t nmap_hash(long key)
 {
@@ -31,7 +49,7 @@ static struct nmap_node* nmap_insert_node(nmap* map, long key, void* value)
 		// Collision
 		else
 		{
-			struct nmap_node* node = (struct nmap_node*)malloc(sizeof(struct nmap_node));
+			nmap_node* node = (nmap_node*)malloc(sizeof(nmap_node));
 			node->key = key;
 			node->value = value;
 			node->nodes = NULL;
@@ -63,7 +81,7 @@ static struct nmap_node* nmap_find_list(list* nodes, long key)
 {
 	for (list_first(nodes); !list_end(nodes); list_next(nodes))
 	{
-		struct nmap_node* node = (struct nmap_node*)list_get(nodes);
+		nmap_node* node = (nmap_node*)list_get(nodes);
 		if (node == NULL || node->key == KEY_NULL)
 			return NULL;
 
@@ -79,11 +97,11 @@ static void nmap_rehash(nmap* map, size_t size)
 	struct nmap_node* old_nodes = map->nodes;
 
 	if (size == 0)
-		map->size += INCR_SIZE;
+		map->size += NMAP_INCR_SIZE;
 	else
 		map->size = size;
 
-	map->nodes = calloc(map->size, sizeof(struct nmap_node));
+	map->nodes = calloc(map->size, sizeof(nmap_node));
 	map->node_count = 0;
 
 	// Clear iterator list
@@ -107,7 +125,7 @@ static void nmap_rehash(nmap* map, size_t size)
 		{
 			for (list_first(nodes); !list_end(nodes); list_next(nodes))
 			{
-				struct nmap_node* node = (struct nmap_node*)list_get(nodes);
+				nmap_node* node = (nmap_node*)list_get(nodes);
 				if (node->key == KEY_NULL)
 					continue;
 
@@ -143,7 +161,7 @@ void nmap_init(nmap* map)
 {
 	map->count = 0;
 	map->node_count = 0;
-	map->size = INCR_SIZE;
+	map->size = NMAP_INCR_SIZE;
 
 	if (map->iterator == NULL)
 		map->iterator = list_new();
@@ -153,7 +171,7 @@ void nmap_init(nmap* map)
 	if (map->nodes != NULL)
 		free(map->nodes);
 
-	map->nodes = calloc(map->size, sizeof(struct nmap_node));
+	map->nodes = calloc(map->size, sizeof(nmap_node));
 
 	for (size_t i = 0; i < map->size; ++i)
 		map->nodes[i].key = KEY_NULL;
@@ -172,7 +190,7 @@ void nmap_clear(nmap* map, BOOL delete)
 				{
 					for (list_first(nodes); !list_end(nodes); list_next(nodes))
 					{
-						struct nmap_node* node = (struct nmap_node*)list_get(nodes);
+						nmap_node* node = (nmap_node*)list_get(nodes);
 						if (node->key != KEY_NULL)
 						{
 							node->key = KEY_NULL;
@@ -290,7 +308,7 @@ void* nmap_find(nmap* map, long key)
 			return map->nodes[index].value;
 
 		// Find node in list
-		struct nmap_node* node = nmap_find_list(nodes, key);
+		nmap_node* node = nmap_find_list(nodes, key);
 		if (node != NULL && node->key != KEY_NULL)
 			return node->value;
 	}
@@ -331,7 +349,7 @@ BOOL nmap_prev(nmap* map)
 nmap_kv nmap_get(nmap* map)
 {
 	nmap_kv kv = {0};
-	struct nmap_node* node = list_get(map->iterator);
+	nmap_node* node = list_get(map->iterator);
 	if (node == NULL)
 		return kv;
 
@@ -358,7 +376,7 @@ void nmap_for_each(nmap*map, nmap_get_value get_value)
 		{
 			for (list_first(nodes); !list_end(nodes); list_next(nodes))
 			{
-				struct nmap_node* node = (struct nmap_node*)list_get(nodes);
+				nmap_node* node = (nmap_node*)list_get(nodes);
 				if (node != NULL && node->key != KEY_NULL)
 					get_value(node->key, node->value);
 			}
@@ -370,7 +388,7 @@ void nmap_print(nmap* map)
 {
 	for (list_first(map->iterator); !list_end(map->iterator); list_next(map->iterator))
 	{
-		struct nmap_node* node = (struct nmap_node*)list_get(map->iterator);
+		nmap_node* node = (nmap_node*)list_get(map->iterator);
 		if (node->key == KEY_NULL)
 			continue;
 

@@ -3,6 +3,20 @@
 #include <stdio.h>
 #include <string.h>
 
+struct list_node
+{
+	void* data;
+	struct list_node* next;
+	struct list_node* prev;
+};
+
+struct list
+{
+	list_node* first;
+	list_node* last;
+	list_node* curr;
+};
+
 list* list_new(void)
 {
 	list* new_list = (list*)malloc(sizeof(list));
