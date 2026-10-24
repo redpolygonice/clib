@@ -21,11 +21,11 @@ typedef struct nmap_kv
 nmap* nmap_new(void);
 void nmap_reserve(nmap* map, size_t size);
 void nmap_init(nmap* map);
-void nmap_clear(nmap* map, BOOL delete);
-void nmap_delete(nmap* map, BOOL delete);
+void nmap_clear(nmap* map, BOOL clean);
+void nmap_delete(nmap* map, BOOL clean);
 void nmap_insert(nmap* map, long key, void* value);
 void nmap_insert_copy(nmap* map, long key, void* value, size_t size);
-void nmap_remove(nmap* map, long key, BOOL delete);
+void nmap_remove(nmap* map, long key, BOOL clean);
 void* nmap_find(nmap* map, long key);
 size_t nmap_size(nmap* map);
 BOOL nmap_empty(nmap* map);

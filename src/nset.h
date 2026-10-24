@@ -1,7 +1,6 @@
 #ifndef NSET_H
 #define NSET_H
 
-#include "list.h"
 #include "nlist.h"
 
 #include <stdio.h>

@@ -97,7 +97,7 @@ static void nmap_rehash(nmap* map, size_t size)
 	struct nmap_node* old_nodes = map->nodes;
 
 	if (size == 0)
-		map->size += NMAP_INCR_SIZE;
+		map->size *= 2;
 	else
 		map->size = size;
 
@@ -153,6 +153,9 @@ nmap* nmap_new()
 
 void nmap_reserve(nmap* map, size_t size)
 {
+	if (size < map->size)
+		return;
+
 	map->size = size;
 	nmap_rehash(map, size);
 }
@@ -177,7 +180,7 @@ void nmap_init(nmap* map)
 		map->nodes[i].key = KEY_NULL;
 }
 
-void nmap_clear(nmap* map, BOOL delete)
+void nmap_clear(nmap* map, BOOL clean)
 {
 	if (map->nodes != NULL)
 	{
@@ -186,7 +189,7 @@ void nmap_clear(nmap* map, BOOL delete)
 			list* nodes = map->nodes[i].nodes;
 			if (nodes != NULL)
 			{
-				if (delete)
+				if (clean)
 				{
 					for (list_first(nodes); !list_end(nodes); list_next(nodes))
 					{
@@ -208,7 +211,7 @@ void nmap_clear(nmap* map, BOOL delete)
 				map->nodes[i].nodes = NULL;
 			}
 
-			if (delete && map->nodes[i].value != NULL)
+			if (clean && map->nodes[i].value != NULL)
 			{
 				free(map->nodes[i].value);
 				map->nodes[i].value = NULL;
@@ -227,12 +230,11 @@ void nmap_clear(nmap* map, BOOL delete)
 		list_clear(map->iterator, FALSE);
 }
 
-void nmap_delete(nmap* map, BOOL delete)
+void nmap_delete(nmap* map, BOOL clean)
 {
-	nmap_clear(map, delete);
+	nmap_clear(map, clean);
 	list_delete(map->iterator, TRUE);
 	free(map);
-	map = NULL;
 }
 
 void nmap_insert(nmap* map, long key, void* value)
@@ -251,7 +253,7 @@ void nmap_insert_copy(nmap* map, long key, void* value, size_t size)
 	nmap_insert(map, key, copy);
 }
 
-void nmap_remove(nmap* map, long key, BOOL delete)
+void nmap_remove(nmap* map, long key, BOOL clean)
 {
 	size_t index = nmap_index(map, key);
 
@@ -261,12 +263,12 @@ void nmap_remove(nmap* map, long key, BOOL delete)
 		struct nmap_node* node = nmap_find_list(nodes, key);
 		if (node != NULL)
 		{
-			if (delete && node->key != KEY_NULL)
+			if (clean && node->key != KEY_NULL)
 			{
 				node->key = KEY_NULL;
 			}
 
-			if (delete && node->value != NULL)
+			if (clean && node->value != NULL)
 			{
 				free(node->value);
 				node->value = NULL;
@@ -282,7 +284,7 @@ void nmap_remove(nmap* map, long key, BOOL delete)
 
 	if (map->nodes[index].key == key)
 	{
-		if (delete && map->nodes[index].value != NULL)
+		if (clean && map->nodes[index].value != NULL)
 			free(map->nodes[index].value);
 
 		map->nodes[index].key = KEY_NULL;
@@ -338,12 +340,32 @@ BOOL nmap_last(nmap* map)
 
 BOOL nmap_next(nmap* map)
 {
-	return list_next(map->iterator);
+	if (!list_next(map->iterator))
+		return FALSE;
+
+	nmap_node* node = list_get(map->iterator);
+	while (node && node->removed)
+	{
+		list_next(map->iterator);
+		node = list_get(map->iterator);
+	}
+
+	return (node ? TRUE : FALSE);
 }
 
 BOOL nmap_prev(nmap* map)
 {
-	return list_prev(map->iterator);
+	if (!list_prev(map->iterator))
+		return FALSE;
+
+	nmap_node* node = list_get(map->iterator);
+	while (node && node->removed)
+	{
+		list_prev(map->iterator);
+		node = list_get(map->iterator);
+	}
+
+	return (node ? TRUE : FALSE);
 }
 
 nmap_kv nmap_get(nmap* map)
@@ -353,14 +375,18 @@ nmap_kv nmap_get(nmap* map)
 	if (node == NULL)
 		return kv;
 
-	while (node->removed)
+	while (node && node->removed)
 	{
 		list_next(map->iterator);
 		node = list_get(map->iterator);
 	}
 
-	kv.key = node->key;
-	kv.value = node->value;
+	if (node)
+	{
+		kv.key = node->key;
+		kv.value = node->value;
+	}
+
 	return kv;
 }
 

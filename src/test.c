@@ -286,7 +286,7 @@ void test_nlist(void)
 	printf("Remove 5\n");
 	if (nlist_find(list, 5))
 		nlist_remove(list);
-	printf("Count %d\n", nlist_ize(list));
+	printf("Count %lu\n", nlist_size(list));
 
 	// Reverse content
 	printf("Reverse Content:\n");
@@ -303,7 +303,7 @@ void test_nlist(void)
 	// Clear list
 	printf("Clear list\n");
 	nlist_clear(list);
-	printf("Count %d\n", nlist_ize(list));
+	printf("Count %lu\n", nlist_size(list));
 
 	// Delete list
 	printf("Delete list\n");
@@ -534,12 +534,12 @@ void test_vector()
 
 int main()
 {
-	//test_smap();
-	//test_nmap();
-	//test_slist();
-	//test_nlist();
-	//test_sset();
-	//test_nset();
-	//test_vector();
+	// test_smap();
+	// test_nmap();
+	// test_slist();
+	// test_nlist();
+	// test_sset();
+	// test_nset();
+	// test_vector();
 	return 0;
 }

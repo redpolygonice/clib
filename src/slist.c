@@ -155,7 +155,7 @@ char* slist_get(slist* list)
 	return list->curr->data;
 }
 
-void slist_remove(slist* list, BOOL delete)
+void slist_remove(slist* list, BOOL clean)
 {
 	if (!list->curr)
 		return;
@@ -197,7 +197,7 @@ void slist_remove(slist* list, BOOL delete)
 			list->last = list->curr;
 	}
 
-	if (delete && curr->data)
+	if (clean && curr->data)
 		free(curr->data);
 	free(curr);
 }
@@ -223,7 +223,7 @@ BOOL slist_empty(slist* list)
 	return list->first == NULL;
 }
 
-void slist_clear(slist* list, BOOL delete)
+void slist_clear(slist* list, BOOL clean)
 {
 	slist_node* node = list->first;
 	if (!node)
@@ -232,7 +232,7 @@ void slist_clear(slist* list, BOOL delete)
 	while (node)
 	{
 		slist_node* temp = node->next;
-		if (delete && node->data)
+		if (clean && node->data)
 			free(node->data);
 		free(node);
 		node = temp;
@@ -241,11 +241,10 @@ void slist_clear(slist* list, BOOL delete)
 	slist_init(list);
 }
 
-void slist_delete(slist* list, BOOL delete)
+void slist_delete(slist* list, BOOL clean)
 {
-	slist_clear(list, delete);
+	slist_clear(list, clean);
 	free(list);
-	list = NULL;
 }
 
 void slist_append(slist* dest, slist* src)

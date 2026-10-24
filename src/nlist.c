@@ -174,7 +174,7 @@ void nlist_remove(nlist* list)
 	free(curr);
 }
 
-size_t nlist_ize(nlist* list)
+size_t nlist_size(nlist* list)
 {
 	nlist_node* node = list->first;
 	if (!node)
@@ -215,7 +215,6 @@ void nlist_delete(nlist* list)
 {
 	nlist_clear(list);
 	free(list);
-	list = NULL;
 }
 
 void nlist_append(nlist* dest, nlist* src)

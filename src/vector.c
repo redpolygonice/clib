@@ -123,12 +123,12 @@ void* vector_at(vector* the_vector, size_t index)
 	return the_vector->data[index].data;
 }
 
-void vector_remove_at(vector* the_vector, size_t index, BOOL delete)
+void vector_remove_at(vector* the_vector, size_t index, BOOL clean)
 {
 	if (index >= the_vector->size)
 		return;
 
-	if (delete && the_vector->data[the_vector->iterator].data != NULL)
+	if (clean && the_vector->data[the_vector->iterator].data != NULL)
 	{
 		free(the_vector->data[index].data);
 		the_vector->data[index].data = NULL;
@@ -190,12 +190,12 @@ void* vector_get(vector* the_vector)
 	return the_vector->data[the_vector->iterator].data;
 }
 
-void vector_remove(vector* the_vector, BOOL delete)
+void vector_remove(vector* the_vector, BOOL clean)
 {
 	if (the_vector->iterator >= the_vector->size)
 		return;
 
-	if (delete && the_vector->data[the_vector->iterator].data != NULL)
+	if (clean && the_vector->data[the_vector->iterator].data != NULL)
 	{
 		free(the_vector->data[the_vector->iterator].data);
 		the_vector->data[the_vector->iterator].data = NULL;
@@ -215,12 +215,12 @@ BOOL vector_empty(vector* the_vector)
 	return the_vector->size == 0;
 }
 
-void vector_clear(vector* the_vector, BOOL delete)
+void vector_clear(vector* the_vector, BOOL clean)
 {
 	if (the_vector->data == NULL || the_vector->size == 0)
 		return;
 
-	if (delete)
+	if (clean)
 	{
 		for (size_t i = 0; i < the_vector->size; ++i)
 		{
@@ -239,9 +239,9 @@ void vector_clear(vector* the_vector, BOOL delete)
 	the_vector->iterator = 0;
 }
 
-void vector_delete(vector* the_vector, BOOL delete)
+void vector_delete(vector* the_vector, BOOL clean)
 {
-	vector_clear(the_vector, delete);
+	vector_clear(the_vector, clean);
 	free(the_vector);
 }
 

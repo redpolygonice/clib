@@ -3,7 +3,6 @@
 
 #include <stdlib.h>
 #include <string.h>
-#include <math.h>
 
 struct sset_node
 {
@@ -24,11 +23,16 @@ struct sset
 static size_t sset_hash(const char* key)
 {
 	size_t code = 0;
+	size_t power = 1;
 	static const size_t number = 31;
 
 	size_t len = strlen(key);
 	for (size_t i = 0; i < len; ++i)
-		code += (int)key[i] * pow(number, i);
+	{
+		char c = key[i];
+		code = code + (c - 'a' + 1) * power;
+		power = power * number;
+	}
 
 	return code;
 }
@@ -101,7 +105,7 @@ static void sset_rehash(sset* set, size_t size)
 	struct sset_node* old_nodes = set->nodes;
 
 	if (size == 0)
-		set->size += SSET_INCR_SIZE;
+		set->size *= 2;
 	else
 		set->size = size;
 
@@ -153,6 +157,9 @@ sset* sset_new()
 
 void sset_reserve(sset* set, size_t size)
 {
+	if (size < set->size)
+		return;
+
 	set->size = size;
 	sset_rehash(set, size);
 }
@@ -174,7 +181,7 @@ void sset_init(sset* set)
 	set->nodes = calloc(set->size, sizeof(struct sset_node));
 }
 
-void sset_clear(sset* set, BOOL delete)
+void sset_clear(sset* set, BOOL clean)
 {
 	if (set->nodes != NULL && set->node_count > 0)
 	{
@@ -183,7 +190,7 @@ void sset_clear(sset* set, BOOL delete)
 			list* nodes = set->nodes[i].nodes;
 			if (nodes != NULL)
 			{
-				if (delete)
+				if (clean)
 				{
 					for (list_first(nodes); !list_end(nodes); list_next(nodes))
 					{
@@ -200,7 +207,7 @@ void sset_clear(sset* set, BOOL delete)
 				set->nodes[i].nodes = NULL;
 			}
 
-			if (delete && set->nodes[i].key != NULL)
+			if (clean && set->nodes[i].key != NULL)
 			{
 				free(set->nodes[i].key);
 				set->nodes[i].key = NULL;
@@ -219,12 +226,11 @@ void sset_clear(sset* set, BOOL delete)
 		list_clear(set->iterator, FALSE);
 }
 
-void sset_delete(sset* set, BOOL delete)
+void sset_delete(sset* set, BOOL clean)
 {
-	sset_clear(set, delete);
+	sset_clear(set, clean);
 	list_delete(set->iterator, TRUE);
 	free(set);
-	set = NULL;
 }
 
 void sset_insert(sset* set, char* key)
@@ -242,7 +248,7 @@ void sset_insert_copy(sset* set, const char* key)
 	sset_insert(set, copy);
 }
 
-void sset_remove(sset* set, const char* key, BOOL delete)
+void sset_remove(sset* set, const char* key, BOOL clean)
 {
 	size_t index = sset_index(set, key);
 
@@ -252,7 +258,7 @@ void sset_remove(sset* set, const char* key, BOOL delete)
 		struct sset_node* node = sset_find_list(nodes, key);
 		if (node != NULL)
 		{
-			if (delete && node->key != NULL)
+			if (clean && node->key != NULL)
 			{
 				free(node->key);
 				node->key = NULL;
@@ -268,7 +274,7 @@ void sset_remove(sset* set, const char* key, BOOL delete)
 
 	if (strcmp(set->nodes[index].key, key) == 0)
 	{
-		if (delete && set->nodes[index].key != NULL)
+		if (clean && set->nodes[index].key != NULL)
 			free(set->nodes[index].key);
 
 		set->nodes[index].key = NULL;
@@ -349,27 +355,47 @@ BOOL sset_last(sset* set)
 
 BOOL sset_next(sset* set)
 {
-	return list_next(set->iterator);
+	if (!list_next(set->iterator))
+		return FALSE;
+
+	sset_node* node = list_get(set->iterator);
+	while (node && node->removed)
+	{
+		list_next(set->iterator);
+		node = list_get(set->iterator);
+	}
+
+	return (node ? TRUE : FALSE);
 }
 
 BOOL sset_prev(sset*set)
 {
-	return list_prev(set->iterator);
+	if (!list_prev(set->iterator))
+		return FALSE;
+
+	sset_node* node = list_get(set->iterator);
+	while (node && node->removed)
+	{
+		list_prev(set->iterator);
+		node = list_get(set->iterator);
+	}
+
+	return (node ? TRUE : FALSE);
 }
 
 char* sset_get(sset* set)
 {
 	struct sset_node* node = list_get(set->iterator);
 	if (node == NULL)
-		return FALSE;
+		return NULL;
 
-	while (node->removed)
+	while (node && node->removed)
 	{
 		list_next(set->iterator);
 		node = list_get(set->iterator);
 	}
 
-	return node->key;
+	return (node ? node->key : NULL);
 }
 
 void sset_for_each(sset* set, sset_get_value get_value)

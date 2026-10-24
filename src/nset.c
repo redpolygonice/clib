@@ -1,5 +1,5 @@
 #include "nset.h"
-#include "types.h"
+#include "list.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -93,7 +93,7 @@ static void nset_rehash(nset* set, size_t size)
 	nset_node* old_nodes = set->nodes;
 
 	if (size == 0)
-		set->size += NSET_INCR_SIZE;
+		set->size *= 2;
 	else
 		set->size = size;
 
@@ -147,6 +147,9 @@ nset* nset_new()
 
 void nset_reserve(nset* set, size_t size)
 {
+	if (size < set->size)
+		return;
+
 	set->size = size;
 	nset_rehash(set, size);
 }
@@ -202,7 +205,6 @@ void nset_delete(nset* set)
 	nset_clear(set);
 	list_delete(set->iterator, TRUE);
 	free(set);
-	set = NULL;
 }
 
 void nset_insert(nset* set, long key)
@@ -282,27 +284,47 @@ BOOL nset_last(nset* set)
 
 BOOL nset_next(nset* set)
 {
-	return list_next(set->iterator);
-}
-
-BOOL nset_prev(nset* set)
-{
-	return list_prev(set->iterator);
-}
-
-long nset_get(nset* set)
-{
-	struct nset_node* node = list_get(set->iterator);
-	if (node == NULL)
+	if (!list_next(set->iterator))
 		return FALSE;
 
-	while (node->removed)
+	nset_node* node = list_get(set->iterator);
+	while (node && node->removed)
 	{
 		list_next(set->iterator);
 		node = list_get(set->iterator);
 	}
 
-	return node->key;
+	return (node ? TRUE : FALSE);
+}
+
+BOOL nset_prev(nset* set)
+{
+	if (!list_prev(set->iterator))
+		return FALSE;
+
+	nset_node* node = list_get(set->iterator);
+	while (node && node->removed)
+	{
+		list_prev(set->iterator);
+		node = list_get(set->iterator);
+	}
+
+	return (node ? TRUE : FALSE);
+}
+
+long nset_get(nset* set)
+{
+	nset_node* node = list_get(set->iterator);
+	if (node == NULL)
+		return KEY_NULL;
+
+	while (node && node->removed)
+	{
+		list_next(set->iterator);
+		node = list_get(set->iterator);
+	}
+
+	return (node ? node->key : KEY_NULL);
 }
 
 void nset_for_each(nset* set, nset_get_value get_value)
@@ -343,7 +365,7 @@ void nset_append(nset* set, nset* src)
 
 void nset_append_list(nset* set, nlist* src)
 {
-	size_t new_size = set->node_count + nlist_ize(src);
+	size_t new_size = set->node_count + nlist_size(src);
 	if (new_size > set->size)
 		nset_reserve(set, new_size);
 

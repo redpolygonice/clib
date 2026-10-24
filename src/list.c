@@ -116,7 +116,10 @@ BOOL list_next(list* list)
 BOOL list_prev(list* list)
 {
 	if (!list->curr || !list->curr->prev)
+	{
+		list->curr = NULL;
 		return FALSE;
+	}
 
 	list->curr = list->curr->prev;
 	return TRUE;
@@ -135,7 +138,7 @@ void* list_get(list* list)
 	return list->curr->data;
 }
 
-void list_remove(list* list, BOOL delete)
+void list_remove(list* list, BOOL clean)
 {
 	if (!list->curr)
 		return;
@@ -177,7 +180,7 @@ void list_remove(list* list, BOOL delete)
 			list->last = list->curr;
 	}
 
-	if (delete && curr->data)
+	if (clean && curr->data)
 		free(curr->data);
 	free(curr);
 }
@@ -203,7 +206,7 @@ BOOL list_empty(list* list)
 	return list->first == NULL;
 }
 
-void list_clear(list* list, BOOL delete)
+void list_clear(list* list, BOOL clean)
 {
 	list_node* node = list->first;
 	if (!node)
@@ -212,7 +215,7 @@ void list_clear(list* list, BOOL delete)
 	while (node)
 	{
 		list_node* temp = node->next;
-		if (delete && node->data)
+		if (clean && node->data)
 			free(node->data);
 		free(node);
 		node = temp;
@@ -221,11 +224,10 @@ void list_clear(list* list, BOOL delete)
 	list_init(list);
 }
 
-void list_delete(list* list, BOOL delete)
+void list_delete(list* list, BOOL clean)
 {
-	list_clear(list, delete);
+	list_clear(list, clean);
 	free(list);
-	list = NULL;
 }
 
 void list_append(list* dest, list* src)

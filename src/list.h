@@ -19,11 +19,11 @@ BOOL list_next(list* list);
 BOOL list_prev(list*list);
 BOOL list_end(list* list);
 void* list_get(list*  list);
-void list_remove(list* list, BOOL delete);
+void list_remove(list* list, BOOL clean);
 size_t list_size(list* list);
 BOOL list_empty(list*list);
-void list_clear(list* list, BOOL delete);
-void list_delete(list* list, BOOL delete);
+void list_clear(list* list, BOOL clean);
+void list_delete(list* list, BOOL clean);
 void list_append(list* dest, list* src);
 void list_print(list* list);
 

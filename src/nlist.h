@@ -19,7 +19,7 @@ BOOL nlist_prev(nlist* list);
 BOOL nlist_end(nlist* list);
 unsigned int nlist_get(nlist* list);
 void nlist_remove(nlist* list);
-size_t nlist_ize(nlist* list);
+size_t nlist_size(nlist* list);
 BOOL nlist_empty(nlist* list);
 void nlist_clear(nlist* list);
 void nlist_delete(nlist* list);
