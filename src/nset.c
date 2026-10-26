@@ -245,6 +245,9 @@ void nset_remove(nset* set, long key)
 
 BOOL nset_find(nset* set, long key)
 {
+	if (set->node_count == 0 || set->count == 0)
+		return FALSE;
+
 	size_t index = nset_index(set, key);
 
 	if (set->nodes[index].key != KEY_NULL &&

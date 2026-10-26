@@ -315,6 +315,9 @@ void smap_remove(smap* map, const char*key, BOOL clean)
 
 void* smap_find(smap* map, const char* key)
 {
+	if (map->node_count == 0 || map->count == 0)
+		return FALSE;
+
 	size_t index = smap_index(map, key);
 
 	list* nodes = map->nodes[index].nodes;

@@ -286,6 +286,9 @@ void sset_remove(sset* set, const char* key, BOOL clean)
 
 BOOL sset_find(sset* set, const char* key)
 {
+	if (set->node_count == 0 || set->count == 0)
+		return FALSE;
+
 	size_t index = sset_index(set, key);
 
 	if (set->nodes[index].key != NULL &&

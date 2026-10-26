@@ -297,6 +297,9 @@ void nmap_remove(nmap* map, long key, BOOL clean)
 
 void* nmap_find(nmap* map, long key)
 {
+	if (map->node_count == 0 || map->count == 0)
+		return FALSE;
+
 	size_t index = nmap_index(map, key);
 
 	list* nodes = map->nodes[index].nodes;
